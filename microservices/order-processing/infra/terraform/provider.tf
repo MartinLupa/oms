@@ -8,6 +8,6 @@ terraform {
     bucket         = "order-processing-state"
     key            = "order-processing/infra/terraform.tfstate"
     region         = "eu-central-1"
-    dynamodb_table = "order-processing-state-lock"
+    dynamodb_table = "order-processing-state"
   }
 }

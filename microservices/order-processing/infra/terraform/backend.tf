@@ -3,7 +3,7 @@ resource "aws_s3_bucket" "order-processing-state" {
 }
 
 resource "aws_dynamodb_table" "order-processing-state" {
-  name         = "order-processing-state-lock"
+  name         = "order-processing-state"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 

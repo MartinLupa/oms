@@ -8,7 +8,7 @@ terraform {
     bucket         = "global-infra-state"
     key            = "global-infra/terraform.tfstate"
     region         = "eu-central-1"
-    dynamodb_table = "global-infra-state-lock"
+    dynamodb_table = "global-infra-state"
   }
 }
 
