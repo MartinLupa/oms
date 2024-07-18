@@ -46,6 +46,12 @@ aws --endpoint-url=http://s3.localhost.localstack.cloud:4566 s3 ls
 http://localhost:4566/_localstack/health
 ```
 
+#### API Gateway
+How to get the gateway endpoint:
+```sh
+http://localhost:4566/restapis/d9cu2lbp28/example/_user_request_/orders
+````
+
 #### SQS
 ```sh
 aws --endpoint-url=http://sqs.localhost.localstack.cloud:4566 sqs list-queues
