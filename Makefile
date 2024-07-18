@@ -27,7 +27,7 @@ deploy-service-infra:
 	cd microservices/$(service)/terraform && terraform init && terraform apply -auto-approve
 
 zip:
-	cd microservices/order-processing/src && zip main.zip main.js
+	cd microservices/order-processing/src && zip index.zip index.js
 
 # Command to deploy all microservices' infrastructure
 deploy-all-services:
