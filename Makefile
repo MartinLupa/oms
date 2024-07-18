@@ -19,13 +19,15 @@ deploy-global-infra:
 destroy-global-infra:
 	cd global-infra/terraform && terraform destroy -auto-approve
 
-# Command to deploy a specific microservice's infrastructure
 deploy-service-infra:
-	@if [ -z "$$1" ]; then \
+	@if [ -z "$(service)" ]; then \
 		echo "Service name is not provided"; \
 		exit 1; \
 	fi
-	cd microservices/$$1/infra/terraform && terraform init && terraform apply -var="use_localstack=true" -auto-approve
+	cd microservices/$(service)/terraform && terraform init && terraform apply -auto-approve
+
+zip:
+	cd microservices/order-processing/src && zip main.zip main.js
 
 # Command to deploy all microservices' infrastructure
 deploy-all-services:

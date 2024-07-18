@@ -11,7 +11,7 @@ This section explains how to set up and use the local development environment fo
 - Terraform
 - AWS CLI
 
-### Commands
+### General Commands
 
 #### Setup LocalStack
 
@@ -39,3 +39,21 @@ aws --endpoint-url=<service_endpoint> <aws_service_name> <aws_service_specific_c
 aws --endpoint-url=http://s3.localhost.localstack.cloud:4566 s3 ls
 ```
 
+
+### Services commands
+#### Localstack healthcheck
+```sh
+http://localhost:4566/_localstack/health
+```
+
+#### SQS
+```sh
+aws --endpoint-url=http://sqs.localhost.localstack.cloud:4566 sqs list-queues
+```
+
+#### Lambda
+```sh
+aws --endpoint-url=http://lambda.localhost.localstack.cloud:4566 lambda list-functions
+```
+
+#### DynamoDB
