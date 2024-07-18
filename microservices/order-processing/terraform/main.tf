@@ -51,9 +51,10 @@ resource "aws_api_gateway_rest_api" "example" {
             }
           }
           x-amazon-apigateway-integration = {
-            httpMethod            = "POST"
-            type                  = "AWS_PROXY"
-            uri                   = "arn:aws:apigateway:eu-central-1:lambda:path/2015-03-31/functions/${aws_lambda_function.test_lambda.arn}/invocations"
+            httpMethod = "POST"
+            type       = "AWS_PROXY"
+            uri        = aws_lambda_function.test_lambda.invoke_arn
+
             integrationHttpMethod = "POST"
             responses = {
               "default" : {
@@ -149,21 +150,19 @@ resource "aws_iam_role_policy_attachment" "lambda_exec_policy_attachment" {
 
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "../src/main.js"
-  output_path = "../src/main.zip"
+  source_file = "${path.module}/../src/main.js"
+  output_path = "${path.module}/../src/main.zip"
 }
 
 resource "aws_lambda_function" "test_lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "../src/main.zip"
-  function_name = "test-lambda-function"
-  role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "index.test"
-
+  filename         = "main.zip"
+  function_name    = "test-lambda-function"
+  role             = aws_iam_role.iam_for_lambda.arn
+  handler          = "main.handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
-
-  runtime = "nodejs20.x"
+  runtime          = "nodejs20.x"
 
   # environment {
   #   variables = {
