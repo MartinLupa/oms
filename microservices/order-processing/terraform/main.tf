@@ -144,17 +144,17 @@ resource "aws_dynamodb_table" "test-table" {
   range_key      = "OrderNr"
 
   attribute {
-    name = "OrderId"
-    type = "S"
-  }
-
-  attribute {
     name = "OrderNr"
     type = "S"
   }
 
   attribute {
-    name = "Product"
+    name = "CustomerEmail"
+    type = "S"
+  }
+
+  attribute {
+    name = "Total"
     type = "S"
   }
 
