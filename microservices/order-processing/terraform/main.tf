@@ -19,91 +19,123 @@ provider "aws" {
     eventbridge = "http://eventbridge.localhost.localstack.cloud:4566"
     dynamodb    = "http://dynamodb.localhost.localstack.cloud:4566"
     apigateway  = "http://apigateway.localhost.localstack.cloud:4566"
+    logs        = "http://logs.localhost.localstack.cloud:4566"
   }
+}
+
+# EventBridge resource docs:
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eventbridge_rule
+resource "aws_cloudwatch_event_rule" "process_orders" {
+  name        = "process-orders"
+  description = "Rule to process orders"
+  event_pattern = jsonencode({
+    "source" : ["my.application"]
+  })
+}
+
+resource "aws_cloudwatch_event_target" "process_orders_target" {
+  rule = aws_cloudwatch_event_rule.process_orders.name
+  arn  = aws_sqs_queue.test_queue.arn
+
+  target_id = "process_orders_target"
+}
+
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id  = "AllowEventBridgeInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.test_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.process_orders.arn
 }
 
 # SQS resource docs:
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue
-resource "aws_sqs_queue" "test-queue" {
+resource "aws_sqs_queue" "test_queue" {
   name = "test-queue"
+  # fifo_queue                  = true
+  # content_based_deduplication = true
+  delay_seconds             = 90
+  max_message_size          = 2048
+  message_retention_seconds = 86400
+  receive_wait_time_seconds = 10
 }
 
-resource "aws_api_gateway_rest_api" "example" {
-  name = "example"
+# resource "aws_api_gateway_rest_api" "example" {
+#   name = "example"
 
-  body = jsonencode({
-    openapi = "3.0.1"
-    info = {
-      title   = "example"
-      version = "1.0"
-    }
-    paths = {
-      "/orders" = {
-        post = {
-          responses = {
-            "200" : {
-              description = "200 response"
-              content = {
-                "application/json" = {
-                  schema = {}
-                }
-              }
-            }
-          }
-          x-amazon-apigateway-integration = {
-            httpMethod = "POST"
-            type       = "AWS_PROXY"
-            uri        = aws_lambda_function.test_lambda.invoke_arn
+#   body = jsonencode({
+#     openapi = "3.0.1"
+#     info = {
+#       title   = "example"
+#       version = "1.0"
+#     }
+#     paths = {
+#       "/orders" = {
+#         post = {
+#           responses = {
+#             "200" : {
+#               description = "200 response"
+#               content = {
+#                 "application/json" = {
+#                   schema = {}
+#                 }
+#               }
+#             }
+#           }
+#           x-amazon-apigateway-integration = {
+#             httpMethod = "POST"
+#             type       = "AWS_PROXY"
+#             uri        = aws_lambda_function.test_lambda.invoke_arn
 
-            integrationHttpMethod = "POST"
-            responses = {
-              "default" : {
-                statusCode = "200"
-                responseParameters = {
-                  "method.response.header.Content-Type" = "'application/json'"
-                }
-                responseTemplates = {
-                  "application/json" = ""
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  })
+#             integrationHttpMethod = "POST"
+#             responses = {
+#               "default" : {
+#                 statusCode = "200"
+#                 responseParameters = {
+#                   "method.response.header.Content-Type" = "'application/json'"
+#                 }
+#                 responseTemplates = {
+#                   "application/json" = ""
+#                 }
+#               }
+#             }
+#           }
+#         }
+#       }
+#     }
+#   })
 
-  endpoint_configuration {
-    types = ["REGIONAL"]
-  }
-}
+#   endpoint_configuration {
+#     types = ["REGIONAL"]
+#   }
+# }
 
 
-resource "aws_api_gateway_deployment" "example" {
-  rest_api_id = aws_api_gateway_rest_api.example.id
+# resource "aws_api_gateway_deployment" "example" {
+#   rest_api_id = aws_api_gateway_rest_api.example.id
 
-  triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.example.body))
-  }
+#   triggers = {
+#     redeployment = sha1(jsonencode(aws_api_gateway_rest_api.example.body))
+#   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
-resource "aws_api_gateway_stage" "example" {
-  deployment_id = aws_api_gateway_deployment.example.id
-  rest_api_id   = aws_api_gateway_rest_api.example.id
-  stage_name    = "example"
-}
+# resource "aws_api_gateway_stage" "example" {
+#   deployment_id = aws_api_gateway_deployment.example.id
+#   rest_api_id   = aws_api_gateway_rest_api.example.id
+#   stage_name    = "example"
+# }
 
-resource "aws_lambda_permission" "apigw" {
-  statement_id  = "AllowAPIGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test_lambda.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.example.execution_arn}/*/POST/orders"
-}
+# resource "aws_lambda_permission" "apigw" {
+#   statement_id  = "AllowAPIGatewayInvoke"
+#   action        = "lambda:InvokeFunction"
+#   function_name = aws_lambda_function.test_lambda.function_name
+#   principal     = "apigateway.amazonaws.com"
+#   source_arn    = "${aws_api_gateway_rest_api.example.execution_arn}/*/POST/orders"
+# }
 
 # Lambda resource docs:
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function
@@ -169,6 +201,13 @@ resource "aws_lambda_function" "test_lambda" {
   #     foo = "bar"
   #   }
   # }
+}
+
+resource "aws_lambda_event_source_mapping" "sqs_event_source" {
+  event_source_arn = aws_sqs_queue.test_queue.arn
+  function_name    = aws_lambda_function.test_lambda.arn
+  batch_size       = 10
+  enabled          = true
 }
 
 

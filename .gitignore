@@ -1,5 +1,7 @@
 # -------------- Project general ignores -------------
 tmp
+.env.local
+.env
 
 # ------------ Terraform specific ignores ------------
 # Local .terraform directories
