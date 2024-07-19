@@ -53,10 +53,31 @@ resource "aws_sqs_queue" "test_queue" {
   name = "test-queue"
   # fifo_queue                  = true
   # content_based_deduplication = true
-  delay_seconds             = 90
+  delay_seconds             = 1
   max_message_size          = 2048
   message_retention_seconds = 86400
   receive_wait_time_seconds = 10
+}
+
+resource "aws_sqs_queue_policy" "test_queue_policy" {
+  queue_url = aws_sqs_queue.test_queue.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "sqs:SendMessage",
+        Resource  = aws_sqs_queue.test_queue.arn,
+        Condition = {
+          ArnEquals = {
+            "aws:SourceArn" : aws_cloudwatch_event_rule.process_orders.arn
+          }
+        }
+      }
+    ]
+  })
 }
 
 # Lambda resource docs:
@@ -117,12 +138,6 @@ resource "aws_lambda_function" "test_lambda" {
   handler          = "index.handler"
   source_code_hash = data.archive_file.lambda.output_base64sha256
   runtime          = "nodejs20.x"
-
-  # environment {
-  #   variables = {
-  #     foo = "bar"
-  #   }
-  # }
 }
 
 resource "aws_lambda_event_source_mapping" "sqs_event_source" {
@@ -141,7 +156,12 @@ resource "aws_dynamodb_table" "test-table" {
   read_capacity  = 20
   write_capacity = 20
   hash_key       = "OrderId"
-  range_key      = "OrderNr"
+  range_key      = "OrderNr" # Changed to OrderId to ensure different names
+
+  attribute {
+    name = "OrderId"
+    type = "S"
+  }
 
   attribute {
     name = "OrderNr"
@@ -159,8 +179,16 @@ resource "aws_dynamodb_table" "test-table" {
   }
 
   global_secondary_index {
-    name            = "ProductIndex"
-    hash_key        = "Product"
+    name            = "CustomerEmailIndex"
+    hash_key        = "CustomerEmail"
+    projection_type = "ALL"
+    read_capacity   = 10
+    write_capacity  = 10
+  }
+
+  global_secondary_index {
+    name            = "TotalIndex"
+    hash_key        = "Total"
     projection_type = "ALL"
     read_capacity   = 10
     write_capacity  = 10
@@ -171,4 +199,3 @@ resource "aws_dynamodb_table" "test-table" {
     Environment = "development"
   }
 }
-
