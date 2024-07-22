@@ -1,0 +1,47 @@
+name: AWS Deployment (Staging)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  USE_LOCALSTACK: false
+  SERVICE_SUFFIX: -staging
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  deploy-infra-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan Localstack
+        run: |
+          terraform plan 
+          -var='use_localstack=${{ env.USE_LOCALSTACK }}' 
+          -var='service_sufix=${{ env.SERVICE_SUFFIX }}'
+          -var='aws_access_key=${{ env.AWS_ACCESS_KEY_ID }}' 
+          -var='aws_secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}' 
+          -out=tfplan
+
+      - name: Terraform Apply Localstack
+        run: |
+          terraform apply 
+          -var='use_localstack=${{ env.USE_LOCALSTACK }}' 
+          -var='service_sufix=${{ env.SERVICE_SUFFIX }}'
+          -var='aws_access_key=${{ env.AWS_ACCESS_KEY_ID }}' 
+          -var='aws_secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}' 
+          -auto-approve
