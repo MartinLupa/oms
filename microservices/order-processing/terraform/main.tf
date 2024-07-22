@@ -1,27 +1,3 @@
-provider "aws" {
-  access_key = "test"
-  secret_key = "test"
-  region     = "eu-central-1"
-
-  # only required for non virtual hosted-style endpoint use case.
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs#s3_use_path_style
-  s3_use_path_style           = true
-  skip_credentials_validation = true
-  skip_metadata_api_check     = true
-  skip_requesting_account_id  = true
-
-  endpoints {
-    iam         = "http://iam.localhost.localstack.cloud:4566"
-    s3          = "http://s3.localhost.localstack.cloud:4566"
-    sqs         = "http://sqs.localhost.localstack.cloud:4566"
-    lambda      = "http://lambda.localhost.localstack.cloud:4566"
-    eventbridge = "http://eventbridge.localhost.localstack.cloud:4566"
-    dynamodb    = "http://dynamodb.localhost.localstack.cloud:4566"
-    apigateway  = "http://apigateway.localhost.localstack.cloud:4566"
-    logs        = "http://logs.localhost.localstack.cloud:4566"
-  }
-}
-
 # EventBridge resource docs:
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eventbridge_rule
 resource "aws_cloudwatch_event_rule" "process_orders" {
