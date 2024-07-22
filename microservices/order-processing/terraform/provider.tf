@@ -21,3 +21,17 @@ provider "aws" {
     logs        = var.use_localstack ? "http://logs.localhost.localstack.cloud:4566" : null
   }
 }
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.0"
+    }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.0"
+    }
+  }
+  required_version = ">= 0.12"
+}
