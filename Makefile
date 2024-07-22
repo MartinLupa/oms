@@ -18,7 +18,10 @@ deploy-service-infra:
 		echo "Service name is not provided"; \
 		exit 1; \
 	fi
-	cd microservices/$(service)/terraform && terraform init && terraform apply -auto-approve
+	cd microservices/$(service)/terraform && \
+	terraform init && \
+	terraform apply -var='use_localstack=true' -auto-approve
+
 
 zip:
 	cd microservices/order-processing/src && zip index.zip index.js

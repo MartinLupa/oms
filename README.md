@@ -49,8 +49,23 @@ http://localhost:4566/_localstack/health
 #### API Gateway
 How to get the gateway endpoint:
 ```sh
-http://localhost:4566/restapis/d9cu2lbp28/example/_user_request_/orders
-````
+aws --endpoint-url=http://localhost:4566 --region eu-central-1 events describe-event-bus
+```
+
+This will return the event buses list with their name and ARN. We can use the EventBridge endpoint configured for Localstack in `provider.tf`, and append the ARN.
+
+```sh
+http://eventbridge.localhost.localstack.cloud:4566/arn:aws:events:eu-central-1:000000000000:event-bus/default
+```
+
+To be able to send events to EventBridge we can use Postman configured with the following headers:
+| Header         | Value                       |
+|----------------|-----------------------------|
+| Content-Type   | `application/x-amz-json-1.1`|
+| X-Amz-Target   | `AWSEvents.PutEvents`       |
+| X-Amz-Date     | `<AWS Date>`                |
+
+As Authorization method we will use `AWS Signature`.
 
 #### SQS
 ```sh
