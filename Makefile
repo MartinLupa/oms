@@ -6,9 +6,9 @@ clean-terraform:
 	find . -name "terraform.tfstate" -type f -exec rm -f {} +
 	find . -name "terraform.tfstate.backup" -type f -exec rm -f {} +
 
-# Commands for setting up localstack and deploying global infra
+# Commands for setting up localstack and deploying infra
 setup-localstack:
-	docker-compose -f localstack/docker-compose.yml up -d
+	docker-compose -f localstack/docker-compose.yml up
 
 destroy-localstack:
 	docker-compose -f localstack/docker-compose.yml down
