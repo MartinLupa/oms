@@ -11,6 +11,8 @@ services:
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEFAULT_REGION=eu-central-1
       - DEBUG=1
+      - LAMBDA_EXECUTOR=docker
+        DEBUG_HOSTNAME_CONNECTION_IP=${DEBUG_HOSTNAME_CONNECTION_IP}
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./tmp/volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
