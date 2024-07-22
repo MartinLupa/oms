@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  lint_and_test:
+  lint_format_and_validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
+      - name: CD into microservices directory
+        run: cd microservices/order-processing/terraform
 
       - name: Terraform Format
         run: terraform fmt -check
