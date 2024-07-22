@@ -13,12 +13,6 @@ setup-localstack:
 destroy-localstack:
 	docker-compose -f localstack/docker-compose.yml down
 
-deploy-global-infra:
-	cd global-infra/terraform && terraform init && terraform apply -var="use_localstack=true" -auto-approve
-
-destroy-global-infra:
-	cd global-infra/terraform && terraform destroy -auto-approve
-
 deploy-service-infra:
 	@if [ -z "$(service)" ]; then \
 		echo "Service name is not provided"; \
@@ -28,10 +22,3 @@ deploy-service-infra:
 
 zip:
 	cd microservices/order-processing/src && zip index.zip index.js
-
-# Command to deploy all microservices' infrastructure
-deploy-all-services:
-	for dir in $(shell ls -d microservices/*/infra/terraform); do \
-		SERVICE=$$(basename $$(dirname $$dir)); \
-		make deploy-service-infra SERVICE=$$SERVICE; \
-	done
